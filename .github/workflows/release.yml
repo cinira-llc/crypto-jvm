@@ -32,5 +32,6 @@ jobs:
       - run: npm audit signatures
       - run: npx semantic-release
         env:
+          CINIRA_GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
