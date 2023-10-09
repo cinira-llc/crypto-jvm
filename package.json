@@ -1,9 +1,13 @@
 {
+  "devDependencies": {
+    "gradle-semantic-release-plugin": "^1.7.7",
+    "semantic-release": "^21.1.2"
+  },
   "release": {
     "plugins": [
       "gradle-semantic-release-plugin",
       [
-        "@semantic-release/git",
+        "@semantic-release/github",
         {
           "assets": [
             "gradle.properties"
@@ -11,9 +15,5 @@
         }
       ]
     ]
-  },
-  "devDependencies": {
-    "gradle-semantic-release-plugin": "^1.7.7",
-    "semantic-release": "^21.1.2"
   }
 }
