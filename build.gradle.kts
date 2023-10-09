@@ -1,11 +1,13 @@
-group = "cinira"
 
 plugins {
     kotlin("jvm")
     `jvm-test-suite`
+    `maven-publish`
 }
 
 apply(from = "./repository.gradle.kts")
+
+group = "cinira"
 
 repositories {
     val ciniraArtifacts: Action<RepositoryHandler> by rootProject.extra
@@ -29,6 +31,18 @@ kotlin {
         target {
             languageVersion.set(JavaLanguageVersion.of(17))
         }
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
+    }
+    repositories {
+        val ciniraArtifacts: Action<RepositoryHandler> by rootProject.extra
+        ciniraArtifacts(this)
     }
 }
 

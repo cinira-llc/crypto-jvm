@@ -10,9 +10,3 @@ pluginManagement {
 plugins {
     kotlin("jvm") version "1.9.10" apply false
 }
-
-rootProject.name = "Cinira Shared Libraries"
-
-include(
-    "packages:crypto-jvm"
-)
