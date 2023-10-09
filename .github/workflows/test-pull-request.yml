@@ -4,9 +4,6 @@ on: [pull_request]
 permissions:
   contents: read
 
-env:
-  CCF_TEST_DATA_PASSPHRASE: ${{ secrets.CCF_TEST_DATA_PASSPHRASE }}
-
 jobs:
   test:
     name: Test
