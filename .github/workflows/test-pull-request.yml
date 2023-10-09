@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           cache: gradle
-          distribution: "temurin"
+          distribution: "corretto"
           java-version: "21"
       - name: Test
         run: ./gradlew --no-daemon javadoc test
