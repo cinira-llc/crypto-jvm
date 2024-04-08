@@ -37,7 +37,7 @@ extra.set("ciniraArtifacts", Action<RepositoryHandler> {
     maven {
         val cinira_artifacts_repo_username: String by extra("mattj65817")
         name = "ciniraArtifacts"
-        url = uri("https://maven.pkg.github.com/mattj65817/cinira-artifacts")
+        url = uri("https://maven.pkg.github.com/cinira-llc/cinira-artifacts")
         credentials {
             username = cinira_artifacts_repo_username
             password = if (extra.has("cinira_artifacts_repo_password")) {
