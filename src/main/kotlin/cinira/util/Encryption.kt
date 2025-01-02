@@ -97,6 +97,17 @@ fun aesDecrypt(key: SecretKey, ivAndEncrypted: ByteArray) =
     }
 
 /**
+ * Decrypt a block of data which was encrypted by [passwordEncrypt()].
+ *
+ * @param password the password to use.
+ * @param data the data to decrypt.
+ * @param salt the 16-byte salt to use, if `null` a salt is derived from the password.
+ * @param iv the 16-byte AES initialization vector to use, if `null` an IV is derived from the password.
+ */
+fun passwordDecrypt(password: String, data: ByteArray, salt: ByteArray? = null, iv: ByteArray? = null) =
+    passwordCipher(DECRYPT_MODE, data, password, salt, iv)
+
+/**
  * AES-encrypt a block of data. Generates a random initialization vector, which is included in the returned encrypted
  * data buffer as its first 16 bytes.
  *
@@ -110,6 +121,17 @@ fun aesEncrypt(key: SecretKey, data: ByteArray) =
         cipher.init(ENCRYPT_MODE, SecretKeySpec(key.encoded, "AES"), IvParameterSpec(iv))
         iv + cipher.doFinal(data)
     }
+
+/**
+ * Encrypt a block of data using a password-based cipher. See [passwordCipher] for details.
+ *
+ * @param password the password to use.
+ * @param data the data to decrypt.
+ * @param salt the 16-byte salt to use, if `null` a salt is derived from the password.
+ * @param iv the 16-byte AES initialization vector to use, if `null` an IV is derived from the password.
+ */
+fun passwordEncrypt(password: String, data: ByteArray, salt: ByteArray? = null, iv: ByteArray? = null) =
+    passwordCipher(ENCRYPT_MODE, data, password, salt, iv)
 
 /**
  * Generate an AES key by PBKDF2-stretching a passphrase with a given (or default) salt. The key can be used with
@@ -132,9 +154,8 @@ fun generateAESKey(passphrase: String, salt: ByteArray? = null) =
                 .digest(encodedPassphrase)
                 .sliceArray(0 until 16)
         }
-        factory.generateSecret(PBEKeySpec(passphrase.toCharArray(), saltValue, 2048, 256))!!
+        factory.generateSecret(PBEKeySpec(passphrase.toCharArray(), saltValue, 65_535, 256))!!
     }
-
 
 /**
  * Decrypt a block of RSA-encrypted data as produced by [rsaEncrypt()].
@@ -147,6 +168,7 @@ fun rsaDecrypt(privateKey: PrivateKey, encrypted: ByteArray) =
         cipher.init(DECRYPT_MODE, privateKey, oaepParams)
         cipher.doFinal(encrypted)!!
     }
+
 
 /**
  * RSA-encrypt a block of data.
@@ -189,6 +211,41 @@ fun extractPublicKey(pem: String) =
         val (_, lines) = extractSection(pem, "PUBLIC KEY")
         factory.generatePublic(X509EncodedKeySpec(base64Decoder.decode(lines.joinToString(""))))!!
     }
+
+/**
+ * Apply password-based encryption or decryption using a `PBEWithHmacSHA256AndAES_256` cipher. The salt and/or AES-256
+ * initialization vector can be provided as 16-byte arrays or can be derived from the password if either or both are
+ * `null`.
+ *
+ * @param mode the cipher mode, [Cipher.ENCRYPT_MODE] or [Cipher.DECRYPT_MODE].
+ * @param data the data to encrypt or decrypt.
+ * @param password the password to use.
+ * @param salt the 16-byte salt to use, if `null` a salt is derived from the password.
+ * @param iv the 16-byte AES initialization vector to use, if `null` an IV is derived from the password.
+ */
+private fun passwordCipher(
+    mode: Int,
+    data: ByteArray,
+    password: String,
+    salt: ByteArray? = null,
+    iv: ByteArray? = null
+) = Cipher.getInstance("PBEWithHmacSHA256AndAES_256").let { cipher ->
+    val (saltValue, ivValue) = if (null != iv && null != salt) {
+        salt to iv
+    } else {
+        val hash = MessageDigest.getInstance("SHA-256").digest(password.encodeToByteArray())
+        (salt ?: hash.sliceArray(0 until 16)) to (iv ?: hash.sliceArray(16 until 32))
+    }
+    if (16 != ivValue.size) {
+        throw IllegalArgumentException("IV must be exactly 16 bytes in length.")
+    } else if (16 != saltValue.size) {
+        throw IllegalArgumentException("Salt must be exactly 16 bytes in length.")
+    }
+    val key = SecretKeyFactory.getInstance("PBEWithHmacSHA256AndAES_256")
+        .generateSecret(PBEKeySpec(password.toCharArray(), saltValue, 65_535))
+    cipher.init(mode, key, PBEParameterSpec(saltValue, 65_535, IvParameterSpec(ivValue)))
+    cipher.doFinal(data)!!
+}
 
 /**
  * Base64 decoder.
