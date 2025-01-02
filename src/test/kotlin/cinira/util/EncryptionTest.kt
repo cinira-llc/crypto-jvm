@@ -11,7 +11,7 @@ class EncryptionTest {
     private val decryptedPrivateKey = extractPrivateKey(encryptedPrivateKeyPEM, "^1GRK2&wlSRQSao*")
 
     @Test
-    fun `aesEncrypt() from aesDecrypt()`() {
+    fun `aesDecrypt() from aesEncrypt()`() {
         val key = generateAESKey("f%UNLck19dtiiFvo")
         val encrypted = aesEncrypt(key, "This is only a test.".encodeToByteArray())
         assertThat(String(aesDecrypt(key, encrypted))).isEqualTo("This is only a test.")
@@ -20,8 +20,29 @@ class EncryptionTest {
     @Test
     fun `aesDecrypt() value encrypted in Javascript`() {
         val key = generateAESKey("f%UNLck19dtiiFvo")
-        val encrypted = Base64.getDecoder().decode("Xs9mgvm4R2cgbhPcDYmJYFrDZ4W1PyKmEmYIUTy7lLnrndYTFj602KatiI1P53TD")
+        val encrypted = Base64.getDecoder().decode("MOI9g3Dr+5HuN7b96xGjSLuHK9opWnOnJR/e22Y+dBwpaVj1rYyshJ3SOc4aWe97")
         assertThat(String(aesDecrypt(key, encrypted))).isEqualTo("This is only a test.")
+    }
+
+    @Test
+    fun `passwordDecrypt() from passwordEncrypt() with same password`() {
+        val encrypted = passwordEncrypt("testPasswordInJava", "This is only a test.".encodeToByteArray())
+        assertThat(String(passwordDecrypt("testPasswordInJava", encrypted))).isEqualTo("This is only a test.")
+    }
+
+    @Test
+    fun `passwordDecrypt() from value encrypted in Javascript with provided iv and salt`() {
+        val iv = "abcdefghijklmnop".encodeToByteArray()
+        val salt = "bcdefghijklmnopq".encodeToByteArray()
+        val encrypted = Base64.getDecoder().decode("otDPCV2k0dFj+eA2czEf1yhx3E8ev6ag4LdMNlAKylk=")
+        val decrypted = passwordDecrypt("testPasswordInJavascript", encrypted, salt, iv);
+        assertThat(String(decrypted)).isEqualTo("This is only a test.")
+    }
+
+    @Test
+    fun `passwordDecrypt() from value encrypted in Javascript`() {
+        val encrypted = Base64.getDecoder().decode("w+UCldO87761GTtfh+fWGvfbUVegpmJsrr4EosqP2GE=")
+        assertThat(String(passwordDecrypt("testPasswordInJavascript", encrypted))).isEqualTo("This is only a test.")
     }
 
     @Test
