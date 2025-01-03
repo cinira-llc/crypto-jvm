@@ -25,24 +25,16 @@ class EncryptionTest {
     }
 
     @Test
+    fun `pbeDecrypt() data from Javascript`() {
+        val encrypted = Base64.getDecoder()
+            .decode("JaAjoHK+JOQET2rlLEg3anhCa2GtZiMc2ez97aRtb09nS4L8Nx4Y1MsxcIeaoaN8of8R+wqBXRz/1UDEfmauLw==");
+        assertThat(String(pbeDecrypt("testPassword", encrypted))).isEqualTo("This is only a test.");
+    }
+
+    @Test
     fun `passwordDecrypt() from passwordEncrypt() with same password`() {
-        val encrypted = passwordEncrypt("testPasswordInJava", "This is only a test.".encodeToByteArray())
-        assertThat(String(passwordDecrypt("testPasswordInJava", encrypted))).isEqualTo("This is only a test.")
-    }
-
-    @Test
-    fun `passwordDecrypt() from value encrypted in Javascript with provided iv and salt`() {
-        val iv = "abcdefghijklmnop".encodeToByteArray()
-        val salt = "bcdefghijklmnopq".encodeToByteArray()
-        val encrypted = Base64.getDecoder().decode("otDPCV2k0dFj+eA2czEf1yhx3E8ev6ag4LdMNlAKylk=")
-        val decrypted = passwordDecrypt("testPasswordInJavascript", encrypted, salt, iv);
-        assertThat(String(decrypted)).isEqualTo("This is only a test.")
-    }
-
-    @Test
-    fun `passwordDecrypt() from value encrypted in Javascript`() {
-        val encrypted = Base64.getDecoder().decode("w+UCldO87761GTtfh+fWGvfbUVegpmJsrr4EosqP2GE=")
-        assertThat(String(passwordDecrypt("testPasswordInJavascript", encrypted))).isEqualTo("This is only a test.")
+        val encrypted = pbeEncrypt("testPasswordInJava", "This is only a test.".encodeToByteArray())
+        assertThat(String(pbeDecrypt("testPasswordInJava", encrypted))).isEqualTo("This is only a test.")
     }
 
     @Test

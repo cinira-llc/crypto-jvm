@@ -52,6 +52,7 @@ testing {
             useJUnitJupiter()
             dependencies {
                 implementation("org.assertj:assertj-core:${project.ext["assertj_version"]}")
+                implementation("org.jasypt:jasypt:${project.ext["jasypt_version"]}")
                 runtimeOnly("ch.qos.logback:logback-classic:${project.ext["logback_version"]}")
             }
         }
